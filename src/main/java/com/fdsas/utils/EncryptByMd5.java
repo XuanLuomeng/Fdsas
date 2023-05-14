@@ -5,9 +5,14 @@ import org.apache.shiro.crypto.hash.SimpleHash;
 import java.util.UUID;
 
 /**
- * 密码加密
+ * 密码加密工具
  */
 public class EncryptByMd5 {
+    /**
+     * password     原密码
+     * salt         盐
+     * simpleHash   加密后的密码
+     */
     private String password;
     private String salt;
     private SimpleHash simpleHash;
