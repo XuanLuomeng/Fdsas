@@ -1,0 +1,15 @@
+spring:
+  #配置数据源信息
+  datasource:
+    #配置数据源类型
+    type: com.zaxxer.hikari.HikariDataSource
+    #配置连接数据据库的各个信息
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/fdsas?useSSL=false&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: 1234
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  #配置类型别名所对应的包
+  type-aliases-package: com.fdsas.pojo
