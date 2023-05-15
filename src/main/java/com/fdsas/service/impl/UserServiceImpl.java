@@ -1,5 +1,7 @@
 package com.fdsas.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fdsas.mapper.UserMapper;
 import com.fdsas.pojo.User;
@@ -37,14 +39,65 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public boolean loginUser(User user) {
+    public String loginUser(String uidOrTel, String password) {
         //获取加密盐,若查询出加密盐不存在,则表示用户不存在返回false登陆失败
-        user.setSalt(userMapper.selectUserSaltByUidOrTel(user.getUid()));
-        if (user.getSalt() == null) {
-            return false;
+        String salt = userMapper.selectUserSaltByUidOrTel(uidOrTel);
+        if (salt == null) {
+            return "0";
         }
         //获取加密后的密码
-        EncryptByMd5 md5 = new EncryptByMd5(user.getPassword(), user.getSalt());
-        return false;
+        EncryptByMd5 md5 = new EncryptByMd5(password, salt);
+        String uid = userMapper.selectIdByUidOrTelAndPassword(uidOrTel, md5.getSimpleHash());
+
+        return uid == null ? uid : "0";
+    }
+
+    @Override
+    public User getUserAllInfoByUidOrTel(String uid) {
+        User user = userMapper.selectUserByUidOrTel(uid);
+        return user;
+    }
+
+    @Override
+    public boolean isExistUserByTel(String telephone) {
+        User user = userMapper.selectUserByUidOrTel(telephone);
+        return user.getUid() == null ? false : true;
+    }
+
+    @Override
+    public boolean checkPasswordAndUpdate(String uid, String oldPassword, String newPassword) {
+        String salt = userMapper.selectUserSaltByUidOrTel(uid);
+        EncryptByMd5 md5 = new EncryptByMd5(oldPassword, salt);
+        String sign = userMapper.selectIdByUidOrTelAndPassword(uid, md5.getSimpleHash());
+        if (sign == null) {
+            return false;
+        }
+
+        //设置新密码和新盐
+        EncryptByMd5 newMd5 = new EncryptByMd5(newPassword);
+        LambdaUpdateWrapper<User> userUpdateWrapper = new LambdaUpdateWrapper<>();
+        userUpdateWrapper.set(User::getPassword, newMd5.getSimpleHash()).set(User::getSalt, newMd5.getSalt()).eq(User::getUid, uid);
+
+        int result = userMapper.update(null, userUpdateWrapper);
+        return result == 1 ? true : false;
+    }
+
+    @Override
+    public boolean updateUserInfoByUser(User user) {
+        /**
+         * 1、通过用户电话号码查询用户信息
+         * 2、若结果用户账号与目前正在使用的账号一致，直接可进行修改；否则，二次检验结果用户账号，若不为null或""则返回修改失败
+         */
+        String uid = userMapper.selectUserByUidOrTel(user.getTelephone()).getUid();
+        if(!uid.equals(user.getUid())) {
+            if (uid != null || !uid.equals("")) {
+                return false;
+            }
+        }
+        LambdaUpdateWrapper<User> userUpdateWrapper = new LambdaUpdateWrapper<>();
+        userUpdateWrapper.set(User::getUserName, user.getUserName()).
+                set(User::getTelephone, user.getTelephone()).
+                set(User::getEmail, user.getEmail());
+        return true;
     }
 }

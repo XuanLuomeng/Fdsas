@@ -16,4 +16,11 @@
         where uid = #{uidOrTel}
            or telephone = #{uidOrTel}
     </select>
+    <select id="selectIdByUidOrTelAndPassword" resultType="java.lang.String">
+        select uid
+        from `user`
+        where (uid = #{uidOrTel}
+            or telephone = #{uidOrTel})
+          and password = #{password}
+    </select>
 </mapper>
