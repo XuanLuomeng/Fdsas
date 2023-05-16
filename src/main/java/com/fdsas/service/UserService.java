@@ -46,5 +46,11 @@ public interface UserService extends IService<User> {
      */
     boolean checkPasswordAndUpdate(String uid, String oldPassword, String newPassword);
 
+    /**
+     * 修改用户所有个人信息
+     *
+     * @param user
+     * @return
+     */
     boolean updateUserInfoByUser(User user);
 }

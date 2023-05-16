@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -114,7 +113,8 @@ public class UserController {
      */
     @ResponseBody
     @RequestMapping("/registUserServlet")
-    public void RegistUser(@RequestParam("register_telephone") String telephone, @RequestParam("register_password") String password,
+    public void RegistUser(@RequestParam("register_telephone") String telephone,
+                           @RequestParam("register_password") String password,
                            HttpServletResponse response) throws IOException {
         User user = new User();
         user.setPassword(password);
@@ -139,7 +139,10 @@ public class UserController {
      */
     @ResponseBody
     @RequestMapping("/updatePassword")
-    public void UpdatePassword(String oldPassword, String newPassword, HttpSession session, HttpServletResponse response) throws IOException {
+    public void UpdatePassword(String oldPassword,
+                               String newPassword,
+                               HttpSession session,
+                               HttpServletResponse response) throws IOException {
         /**
          * 获取参数
          */

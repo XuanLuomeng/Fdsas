@@ -1,7 +1,6 @@
 package com.fdsas.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fdsas.mapper.UserMapper;
 import com.fdsas.pojo.User;
@@ -66,6 +65,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public boolean checkPasswordAndUpdate(String uid, String oldPassword, String newPassword) {
+        /**
+         * 先通过用户账号查询获取盐，然后与旧密码进行加密，再通过加密后的密码和用户账号查询结果，结果不为空则可以进行密码修改
+         */
         String salt = userMapper.selectUserSaltByUidOrTel(uid);
         EncryptByMd5 md5 = new EncryptByMd5(oldPassword, salt);
         String sign = userMapper.selectIdByUidOrTelAndPassword(uid, md5.getSimpleHash());
@@ -76,7 +78,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //设置新密码和新盐
         EncryptByMd5 newMd5 = new EncryptByMd5(newPassword);
         LambdaUpdateWrapper<User> userUpdateWrapper = new LambdaUpdateWrapper<>();
-        userUpdateWrapper.set(User::getPassword, newMd5.getSimpleHash()).set(User::getSalt, newMd5.getSalt()).eq(User::getUid, uid);
+        userUpdateWrapper.set(User::getPassword, newMd5.getSimpleHash()).
+                set(User::getSalt, newMd5.getSalt()).
+                eq(User::getUid, uid);
 
         int result = userMapper.update(null, userUpdateWrapper);
         return result == 1 ? true : false;
