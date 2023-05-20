@@ -20,16 +20,6 @@ public class UserController {
     private UserService userService;
 
     /**
-     * 登陆页面(保存referer,方便登陆完后返回某个页面)
-     */
-    @GetMapping("/loginOrRegister")
-    public String loginOrRegister(@RequestHeader(value = "referer", required = false, defaultValue = "/") String referer
-            , HttpSession httpSession) {
-        httpSession.setAttribute("referer", referer);
-        return "fdsas/loginOrRegister";
-    }
-
-    /**
      * 退出登录，即删除客户端浏览器上的session
      */
     @ResponseBody
@@ -96,14 +86,9 @@ public class UserController {
         String uid = userService.loginUser(uidOrTel, password);
         if (!uid.equals("0")) {
             //利用会话技术存储个人信息，以便用户访问其个人信息
-            session.setAttribute("userId", uid);
+            session.setAttribute("uid", uid);
             String referer = (String) session.getAttribute("referer");
-            String url = "";
-            if (!referer.equals("http://localhost:8080/intangibleCulturalHeritage/")) {
-                url = referer.split("/")[referer.split("/").length - 1];
-                session.removeAttribute("referer");
-            }
-            new InfoResponse(response, true, url);
+            new InfoResponse(response, true, "登陆成功");
         } else {
             new InfoResponse(response, false, "账号或密码有误！");
         }

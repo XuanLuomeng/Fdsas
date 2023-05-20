@@ -51,7 +51,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         EncryptByMd5 md5 = new EncryptByMd5(password, salt);
         String uid = userMapper.selectIdByUidOrTelAndPassword(uidOrTel, md5.getSimpleHash());
 
-        return uid == null ? uid : "0";
+        return uid != null ? uid : "0";
     }
 
     @Override
