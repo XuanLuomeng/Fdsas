@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
  */
 public class User {
     /**
-     * id           编号
+     * id           用户编号
      * uid          账号
      * salt         加密盐
      * password     密码(此为加密后的盐)

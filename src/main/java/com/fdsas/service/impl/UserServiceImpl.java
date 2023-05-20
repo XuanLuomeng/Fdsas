@@ -20,9 +20,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //随机账号
         Long aLong = RandomAccountUtil.randomNumberIsTen();
         User users = null;
-        while (users == null) {
+        while (true) {
             users = userMapper.selectUserByUidOrTel(aLong + "");
             aLong = RandomAccountUtil.randomNumberIsTen();
+            if(users==null){
+                break;
+            }
         }
         //密码加密
         EncryptByMd5 md5 = new EncryptByMd5(user.getPassword());
@@ -60,7 +63,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public boolean isExistUserByTel(String telephone) {
         User user = userMapper.selectUserByUidOrTel(telephone);
-        return user.getUid() == null ? false : true;
+        return user == null ? false : true;
     }
 
     @Override

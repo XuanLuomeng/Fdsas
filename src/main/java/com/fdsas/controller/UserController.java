@@ -1,19 +1,18 @@
 package com.fdsas.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fdsas.pojo.User;
 import com.fdsas.service.UserService;
 import com.fdsas.utils.InfoResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Map;
 
 @Controller
 public class UserController {
@@ -23,18 +22,18 @@ public class UserController {
     /**
      * 登陆页面(保存referer,方便登陆完后返回某个页面)
      */
-    @RequestMapping("/loginOrRegister")
+    @GetMapping("/loginOrRegister")
     public String loginOrRegister(@RequestHeader(value = "referer", required = false, defaultValue = "/") String referer
             , HttpSession httpSession) {
         httpSession.setAttribute("referer", referer);
-        return "island/loginOrRegister";
+        return "fdsas/loginOrRegister";
     }
 
     /**
      * 退出登录，即删除客户端浏览器上的session
      */
     @ResponseBody
-    @RequestMapping("/exitServlet")
+    @GetMapping("/exitServlet")
     public void Exit(HttpSession session) {
         session.invalidate();
     }
@@ -43,7 +42,7 @@ public class UserController {
      * 通过账号查询用户信息（不包含密码，盐和uid）
      */
     @ResponseBody
-    @RequestMapping("/getUserInfo")
+    @GetMapping("/getUserInfo")
     public void GetUserInfo(HttpSession session, HttpServletResponse response) throws IOException {
         /**
          * 参数获取
@@ -64,7 +63,7 @@ public class UserController {
      * 从session里获取userId，如果没有则返回0，有则返回用户名称.用作检测是否已登录供许多功能使用
      */
     @ResponseBody
-    @RequestMapping("/isLogin")
+    @GetMapping("/isLogin")
     public void isLogin(HttpSession session, HttpServletResponse response) throws IOException {
         String uid = (String) session.getAttribute("uid");
         /**
@@ -89,9 +88,11 @@ public class UserController {
      * 登录
      */
     @ResponseBody
-    @RequestMapping("/loginServlet")
-    public void Login(@RequestParam("login_uid_or_tel") String uidOrTel, @RequestParam("login_password") String password,
+    @PostMapping("/loginServlet")
+    public void Login(@RequestBody Map<String, Object> map,
                       HttpSession session, HttpServletResponse response) throws IOException {
+        String uidOrTel = (String) map.get("uidOrTel");
+        String password = (String) map.get("login_password");
         String uid = userService.loginUser(uidOrTel, password);
         if (!uid.equals("0")) {
             //利用会话技术存储个人信息，以便用户访问其个人信息
@@ -112,10 +113,11 @@ public class UserController {
      * 注册
      */
     @ResponseBody
-    @RequestMapping("/registUserServlet")
-    public void RegistUser(@RequestParam("register_telephone") String telephone,
-                           @RequestParam("register_password") String password,
+    @PostMapping("/registerUserServlet")
+    public void RegistUser(@RequestBody Map<String, Object> map,
                            HttpServletResponse response) throws IOException {
+        String telephone = (String) map.get("register_phone");
+        String password = (String) map.get("register_password");
         User user = new User();
         user.setPassword(password);
         user.setTelephone(telephone);
@@ -138,14 +140,15 @@ public class UserController {
      * 修改密码
      */
     @ResponseBody
-    @RequestMapping("/updatePassword")
-    public void UpdatePassword(String oldPassword,
-                               String newPassword,
+    @PostMapping("/updatePassword")
+    public void UpdatePassword(@RequestBody Map<String, Object> map,
                                HttpSession session,
                                HttpServletResponse response) throws IOException {
         /**
          * 获取参数
          */
+        String oldPassword = (String) map.get("oldPassword");
+        String newPassword = (String) map.get("newPassword");
         String uid = String.valueOf(session.getAttribute("uid"));
 
         boolean isSuccessful = userService.checkPasswordAndUpdate(uid, oldPassword, newPassword);
@@ -161,17 +164,13 @@ public class UserController {
      * 修改个人信息
      */
     @ResponseBody
-    @RequestMapping("/updateUserInfos")
-    public void UpdateUserInfo(String userName, String telephone, String email, HttpServletResponse response,
+    @PostMapping("/updateUserInfos")
+    public void UpdateUserInfo(@RequestBody User user, HttpServletResponse response,
                                HttpSession session) throws IOException {
         /**
          * 获取参数
          */
-        User user = new User();
         user.setUid(String.valueOf(session.getAttribute("uid")));
-        user.setUserName(userName);
-        user.setTelephone(telephone);
-        user.setEmail(email);
 
         boolean result = userService.updateUserInfoByUser(user);
 
