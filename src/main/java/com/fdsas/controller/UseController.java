@@ -19,6 +19,12 @@ public class UseController {
     @Autowired
     private UserService userService;
 
+    /**
+     * 获取功能使用次数
+     * @param session
+     * @param response
+     * @throws IOException
+     */
     @GetMapping("/getUserUseTime")
     public void getUserUseTime(HttpSession session, HttpServletResponse response) throws IOException {
         //从session中获取用户账号，然后通过查询获取用户编号再到数据库use表中查询用户的功能使用次数
