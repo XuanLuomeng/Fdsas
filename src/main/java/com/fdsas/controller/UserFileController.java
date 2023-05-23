@@ -39,11 +39,9 @@ public class UserFileController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private UseService useService;
-
     /**
      * 文件上传功能
+     *
      * @param uploadFile
      * @param session
      * @param response
@@ -55,73 +53,67 @@ public class UserFileController {
         //获取用户信息
         User user = userService.getUserAllInfoByUidOrTel((String) session.getAttribute("uid"));
         Long userId = user.getId();
-        Integer time = useService.getTimeByUserId(userId);
         //判断是否是vip用户以及已上传次数,非会员且已上传次数大于等于1的不可再上传
-        if ((user.getVip() == 0) && (time >= 1)) {
-            new InfoResponse(response, false, "你不是vip客户哟！");
-        } else {
-            /**
-             * 处理文件上传
-             */
-            String filename = "";
-            //新文件名是用于方便用户文件存储在服务端时不被因新文件名相同而覆盖
-            String fileNewName = "";
-            String filePath = "";
-            if (uploadFile != null) {
-                //获取上传的文件的文件名
-                filename = uploadFile.getOriginalFilename();
-                //获取上传的文件名的后缀
-                String hzName = filename.substring(filename.lastIndexOf("."));
-                //获取uuid
-                String uuid = UUID.randomUUID().toString();
-                //拼接一个新的文件名
-                fileNewName = uuid + hzName;
-                //获取ServletContext对象
-                ServletContext servletContext = session.getServletContext();
-                //获取当前工程的真实路径
-                filePath = servletContext.getRealPath("userFile/");
-                //创建photoPath所对应的File对象
-                File file = new File(filePath);
-                //判断file所对应目录是否存在
-                if (!file.exists()) {
-                    file.mkdir();
-                }
-                String finalPath = filePath + File.separator + fileNewName;
-                //上传文件
-                uploadFile.transferTo(new File(finalPath));
+        /**
+         * 处理文件上传
+         */
+        String filename = "";
+        //新文件名是用于方便用户文件存储在服务端时不被因新文件名相同而覆盖
+        String fileNewName = "";
+        String filePath = "";
+        if (uploadFile != null) {
+            //获取上传的文件的文件名
+            filename = uploadFile.getOriginalFilename();
+            //获取上传的文件名的后缀
+            String hzName = filename.substring(filename.lastIndexOf("."));
+            //获取uuid
+            String uuid = UUID.randomUUID().toString();
+            //拼接一个新的文件名
+            fileNewName = uuid + hzName;
+            //获取ServletContext对象
+            ServletContext servletContext = session.getServletContext();
+            //获取当前工程的真实路径
+            filePath = servletContext.getRealPath("userFile/");
+            //创建photoPath所对应的File对象
+            File file = new File(filePath);
+            //判断file所对应目录是否存在
+            if (!file.exists()) {
+                file.mkdir();
             }
-            /**
-             * 获取参数，并获取当前时间
-             */
-            Date pushdate = new Date();
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            /**
-             * 获取当前用户uid信息,并用该uid去上传文章
-             * 设置文章相关信息
-             */
-            UserFile userFile = new UserFile();
-            userFile.setId(userId);
-            userFile.setFileName(filename);
-            userFile.setFileNewName(fileNewName);
-            userFile.setPath(filePath);
-            userFile.setDate(simpleDateFormat.format(pushdate));
+            String finalPath = filePath + File.separator + fileNewName;
+            //上传文件
+            uploadFile.transferTo(new File(finalPath));
+        }
+        /**
+         * 获取参数，并获取当前时间
+         */
+        Date pushdate = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        /**
+         * 获取当前用户uid信息,并用该uid去上传文章
+         * 设置文章相关信息
+         */
+        UserFile userFile = new UserFile();
+        userFile.setId(userId);
+        userFile.setFileName(filename);
+        userFile.setFileNewName(fileNewName);
+        userFile.setPath(filePath);
+        userFile.setDate(simpleDateFormat.format(pushdate));
 
-            /**
-             * 保存至数据库,若上传成功则修改用户已上传信息
-             */
-            int result = userFileService.uploadFile(userFile);
-            Use use = new Use(userId, time + 1);
-            if (result == 1) {
-                useService.addTimeByUserId(use);
-                new InfoResponse(response, true, "上传成功");
-            } else {
-                new InfoResponse(response, false, "上传失败");
-            }
+        /**
+         * 保存至数据库,若上传成功则修改用户已上传信息
+         */
+        int result = userFileService.uploadFile(userFile);
+        if (result == 1) {
+            new InfoResponse(response, true, "上传成功");
+        } else {
+            new InfoResponse(response, false, "上传失败");
         }
     }
 
     /**
      * 获取已上传文件page信息
+     *
      * @param page
      * @param session
      * @param response
@@ -150,6 +142,7 @@ public class UserFileController {
 
     /**
      * 下载选择的已上传文件
+     *
      * @param fid
      * @param response
      * @param isOnLine
@@ -190,6 +183,7 @@ public class UserFileController {
 
     /**
      * 删除选择的已上传文件
+     *
      * @param fid
      * @param response
      * @throws IOException
