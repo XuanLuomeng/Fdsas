@@ -45,9 +45,10 @@ public class FileAnalysisController {
                              HttpSession session) throws IOException {
         String uid = (String) session.getAttribute("uid");
         User user = userService.getUserAllInfoByUidOrTel(uid);
+        int vip = user.getVip();
         Integer time = useService.getTimeByUserId(user.getId());
-        if (user.getVip() == 0 && time >= 10) {
-            new InfoResponse(response,false,"分析失败！非vip次数已用完！");
+        if (vip == 0 && time >= 10) {
+            new InfoResponse(response, false, "分析失败！非vip次数已用完！");
         } else {
             UserFile fileByFid = userFileService.getUserFileByFid(fid);
             // 获取python文件所在目录地址
@@ -65,7 +66,7 @@ public class FileAnalysisController {
             arguments[1] = pythonPath;
             arguments[2] = savePath;
             arguments[3] = filePath;
-            arguments[4] = String.valueOf(100);
+            arguments[4] = String.valueOf(vip == 0 ? 0 : 1);
             //存放参数
             for (int i = 1; i < map.size(); i++) {
                 arguments[i + 4] = (String) map.get(i);

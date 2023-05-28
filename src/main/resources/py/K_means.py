@@ -95,14 +95,19 @@ class vis:
                 file_name=file_name+random.choice(letter)
         return file_name
     #传入的在这里，path是路径
-    def show():#data_path,num_clustres,x_axis,y_axis,path///#传入数据路径date_path和簇的数量num_clustres,和用户指定的两个变量
+    def show():
+        #传入数据路径date_path和簇的数量num_clustres,和用户指定的两个变量，是否会员
         path=str(sys.argv[1])#结果文件的存储路径
         data_path=str(sys.argv[2])#传入数据路径
-        num_clustres=int(sys.argv[3])#簇的数量
-        x_axis=str(sys.argv[4])#用户指定的第一个变量
-        y_axis=str(sys.argv[5])#用户指定的第二个变量
+        is_vip=int(sys.argv[3])#是否会员，是为1，否为0
+        num_clustres=int(sys.argv[4])#簇的数量
+        x_axis=str(sys.argv[5])#用户指定的第一个变量
+        y_axis=str(sys.argv[6])#用户指定的第二个变量
         
-        data=pd.read_excel(data_path)
+        if is_vip:#会员
+            data=pd.read_excel(data_path)#根据路径传入数据
+        else:#非会员只能用前100行
+            data=pd.read_excel(data_path,nrows=100)#根据路径传入数据,
         num_examples=data.shape[0]
         x_train=data[[x_axis,y_axis]].values.reshape(num_examples,2)#传入数据，两列，根据用户的给定的变量
         max_iteritions=50#最大迭代次数
@@ -110,16 +115,15 @@ class vis:
         centroids,closest_centroids_ids=k_means.train(max_iteritions)
         plt.figure( figsize=(12,5))
         for centroid_id,centroid in enumerate(centroids):#簇
-            current_examples_index=(closest_centroids_ids==centroid_id).flatten()              
+            current_examples_index=(closest_centroids_ids==centroid_id).flatten()
             plt.scatter(data[x_axis][current_examples_index],data[y_axis][current_examples_index])
-
         for centroid_id,centroid in enumerate(centroids):#中心点
             plt.scatter(centroid[0],centroid[1],c='black',marker='x')
         plt.xlabel(x_axis)
         plt.ylabel(y_axis)
         file_name=vis.random_name(10)#可定义文件名的长度
         plt.savefig(path+file_name)#保存图片，可以在这里设置存储路径
-        print(path+file_name+".png")#第一个返回的是文件名，第二个返回的是文件路径
+        print(file_name,path+file_name)#第一个返回的是文件名，第二个返回的是文件路径
 
 
 # In[4]:

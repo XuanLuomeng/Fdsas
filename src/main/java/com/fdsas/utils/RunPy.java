@@ -22,6 +22,7 @@ public class RunPy {
             BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream(), "utf-8"));
             //记录输出结果
             line = in.readLine();
+            line = line.split(" ")[1];
             //记录错误信息
             while ((line = error.readLine()) != null) {
                 System.out.println(line);
